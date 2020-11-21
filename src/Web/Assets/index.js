@@ -13,7 +13,7 @@ const calculator = {
 
 function handleKeypress(event) {
     const { key } = event;
-    event.preventDefault(); 
+    event.preventDefault();
     const element = document.querySelector(`button[value="${key}"]`);
     if (element) {
         element.classList.add('button-active');
@@ -23,7 +23,7 @@ function handleKeypress(event) {
     }
 }
 
-function handleButtonClick(event) {
+async function handleButtonClick(event) {
     const { target } = event;
     const { value } = target;
     if (!target.matches('button')) {
@@ -32,14 +32,14 @@ function handleButtonClick(event) {
     console.log(`hadnlebuttonClick:${value}`);
     switch (value) {
         case '+':
-        case '-':
+        case '-': 
         case '*':
         case '/':
         case 'Enter':
-            const operator = value =='Enter'? '=': value;
-            handleOperator(operator);
+            const operator = value == 'Enter' ? '=' : value;
+            await handleOperator(operator);
             break;
-        case '.':
+        case '.': 
             inputDecimal(value);
             break;
         case 'Delete':
@@ -79,7 +79,7 @@ function inputDecimal(dot) {
     }
 }
 
-function handleOperator(nextOperator) {
+async function handleOperator(nextOperator) {
     console.log(`handleOperator: ${nextOperator} ${JSON.stringify(calculator)}`);
     const { firstOperand, displayValue, operator } = calculator;
     const inputValue = parseFloat(displayValue);
@@ -94,7 +94,7 @@ function handleOperator(nextOperator) {
         console.log("waitingForSecondOperand");
         calculator.firstOperand = inputValue;
     } else if (operator) {
-        const result = calculate(firstOperand, inputValue, operator);
+        const result =  await calculate(firstOperand, inputValue, operator);
         console.log(`result:${result}`);
         calculator.displayValue = `${parseFloat(result.toFixed(11))}`;
         calculator.firstOperand = result;
@@ -104,19 +104,31 @@ function handleOperator(nextOperator) {
     calculator.operator = nextOperator;
 }
 
-function calculate(firstOperand, secondOperand, operator) {
-    console.log(`calculate:${firstOperand} ${secondOperand} ${operator}`);
-    if (operator === '+') {
-        return firstOperand + secondOperand;
-    } else if (operator === '-') {
-        return firstOperand - secondOperand;
-    } else if (operator === '*') {
-        return firstOperand * secondOperand;
-    } else if (operator === '/') {
-        return firstOperand / secondOperand;
-    }
+async function postData(data) {
+    const response = await fetch("/api/calculator/calculate", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(data)
+    });
+    var data = await response.text();
+    return JSON.parse(data, function (key, value) {
+        if (value === "Infinity") {
+            return Infinity;
+        } else if (value === "-Infinity") {
+            return -Infinity;
+        } else if (value === "NaN") {
+            return NaN;
+        }
+        return value;
+    });
+}
 
-    return secondOperand;
+async function calculate(firstOperand, secondOperand, operator) {
+    console.log(`calculate:${firstOperand} ${secondOperand} ${operator}`);
+    const result = await postData({ firstOperand, secondOperand, operator });
+    return result;
 }
 
 

@@ -1,0 +1,24 @@
+﻿@page 
+@model InternalServerErrorModel
+@{
+    ViewData["Title"] = "500 Internal Server Error";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h2>
+                    500 Internal Server Error</h2>
+                <div class="error-details">
+                    @if (Model.ShowRequestId)
+                    {
+                        <p>
+                            <strong>Request ID:</strong> <code>@Model.RequestId</code>
+                        </p>
+                    }
+                    Sajnos valami hiba történt a szerveren, próbáld újra hátha ....
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
